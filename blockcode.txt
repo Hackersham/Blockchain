@@ -1,0 +1,63 @@
+import hashlib
+import datetime
+
+class Transaction:
+    def __init__(self, transaction_no, date, product_no, product_name, price, quantity):
+        self.transaction_no = transaction_no
+        self.date = date
+        self.product_no = product_no
+        self.product_name = product_name
+        self.price = price
+        self.quantity = quantity
+        self.timestamp = datetime.datetime.now()
+        self.previous_hash = None
+        self.hash = self.calculate_hash()
+
+    def calculate_hash(self):
+        data = str(self.transaction_no) + self.date + str(self.product_no) + self.product_name + str(self.price) + str(self.quantity) + str(self.timestamp) + str(self.previous_hash)
+        return hashlib.sha256(data.encode()).hexdigest()
+
+class Block:
+    def __init__(self, transactions, previous_hash):
+        self.transactions = transactions
+        self.timestamp = datetime.datetime.now()
+        self.previous_hash = previous_hash
+        self.hash = self.calculate_hash()
+
+    def calculate_hash(self):
+        data = str(self.transactions) + str(self.timestamp) + str(self.previous_hash)
+        return hashlib.sha256(data.encode()).hexdigest()
+
+class Blockchain:
+    def __init__(self):
+        self.chain = [self.create_genesis_block()]
+
+    def create_genesis_block(self):
+        return Block([], "0")  # The genesis block has no transactions and a previous hash of "0"
+
+    def add_block(self, block):
+        block.previous_hash = self.chain[-1].hash
+        block.hash = block.calculate_hash()
+        self.chain.append(block)
+
+# Creating transactions
+transactions = [
+    Transaction(581482, "12-09-2019", 22485, "Set Of 2 Wooden Market Crates", 21.47, 12),
+    # Add more transactions here
+]
+
+# Creating the blockchain
+shop_blockchain = Blockchain()
+
+# Creating a block for the transactions and adding it to the blockchain
+block = Block(transactions, shop_blockchain.chain[-1].hash)
+shop_blockchain.add_block(block)
+
+# Printing the blockchain
+for block in shop_blockchain.chain:
+    print(f"Block Hash: {block.hash}")
+    print(f"Previous Hash: {block.previous_hash}")
+    print(f"Timestamp: {block.timestamp}")
+    for transaction in block.transactions:
+        print(f"Transaction No: {transaction.transaction_no}")
+    print()
